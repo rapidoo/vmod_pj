@@ -9,14 +9,14 @@ varnish v1 -vcl+backend {
 	import pj from "${vmod_topbuild}/src/.libs/libvmod_pj.so";
 
 	sub vcl_deliver {
-		set resp.http.hello = pj.hello("World")
+		set resp.http.hello = pj.hello("abc")
 	}
 } -start
 
 client c1 {
 	txreq -url "/"
 	rxresp
-	expect resp.http.hello == "Hello, World"
+	expect resp.http.hello == "900150983cd24fb0d6963f7d28e17f72"
 }
 
 client c1 -run
