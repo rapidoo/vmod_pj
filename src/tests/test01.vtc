@@ -19,7 +19,7 @@ varnish v1 -vcl+backend {
 client c1 {
 	txreq -url "/"
 	rxresp
-	expect resp.http.hello == "a25b9d7bc7981afa" 
+	expect resp.http.hello == "abc" 
 }
 
 client c1 -run
