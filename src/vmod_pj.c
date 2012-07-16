@@ -34,7 +34,7 @@ vmod_hello(struct sess *sp, const char *name)
   	MD5Final (digest, &context);
 
   	for (i = 0; i < 16; i++)
-		sprintf (&digest2[i], "%02x", (int)digest[i]);
+		sprintf (digest2+i*2, "%02x", (int)digest[i]);
 
 
 	v = snprintf(p, u, "%s", digest2);
