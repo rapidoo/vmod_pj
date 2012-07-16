@@ -8,9 +8,8 @@ libvmod_pj_la_LDFLAGS = -module -export-dynamic -avoid-version
 libvmod_pj_la_SOURCES = \
 	vcc_if.c \
 	vcc_if.h \
-	md5.c \
-	md5.h \
-	vmod_pj.c
+	vmod_pj.c \
+	md5.c 
 
 vcc_if.c vcc_if.h: $(VARNISHSRC)/lib/libvmod_std/vmod.py $(top_srcdir)/src/vmod_pj.vcc
 	@PYTHON@ $(VARNISHSRC)/lib/libvmod_std/vmod.py $(top_srcdir)/src/vmod_pj.vcc
@@ -28,3 +27,4 @@ EXTRA_DIST = \
 	$(VMOD_TESTS)
 
 CLEANFILES = $(builddir)/vcc_if.c $(builddir)/vcc_if.h
+

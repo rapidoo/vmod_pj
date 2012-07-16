@@ -19,23 +19,25 @@ vmod_hello(struct sess *sp, const char *name)
 {
 	char *p;
 	unsigned u, v;
-	MD_CTX context;
-	unsigned char digest[16];
-	unsigned int len = strlen (name);
+ 	unsigned int i;
 
+	MD5_CTX context;
+	unsigned char digest[16];
+	unsigned char digest2[16];
+	unsigned int len = strlen (name);
 
 	u = WS_Reserve(sp->wrk->ws, 0); /* Reserve some work space */
 	p = sp->wrk->ws->f;		/* Front of workspace area */
 
-  	MDInit (&context);
-  	MDUpdate (&context, name, len);
-  	MDFinal (digest, &context);
+  	MD5Init (&context);
+  	MD5Update (&context, name, len);
+  	MD5Final (digest, &context);
 
-  	printf ("MD5 ori (\"%s\") = ", name);
-	printf ("MD5 calcul (\"%s\") = ", digest);
-  	printf ("\n");
-	
-	v = snprintf(p, u, "%s", digest);
+  	for (i = 0; i < 16; i++)
+		sprintf (&digest2[i], "%02x", (int)digest[i]);
+
+
+	v = snprintf(p, u, "%s", digest2);
 	v++;
 	if (v > u) {
 		/* No space, reset and leave */

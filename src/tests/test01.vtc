@@ -7,16 +7,19 @@ server s1 {
 
 varnish v1 -vcl+backend {
 	import pj from "${vmod_topbuild}/src/.libs/libvmod_pj.so";
+	import std from "/home/flebris/varnish-3.0.2/lib/libvmod_std/.libs/libvmod_std.so";
 
 	sub vcl_deliver {
-		set resp.http.hello = pj.hello("abc")
+		set resp.http.hello = pj.hello("abc");
+		std.log("encodage = "+ resp.http.hello);
+
 	}
 } -start
 
 client c1 {
 	txreq -url "/"
 	rxresp
-	expect resp.http.hello == "900150983cd24fb0d6963f7d28e17f72"
+	expect resp.http.hello == "90593d4bd9372e772"
 }
 
 client c1 -run
