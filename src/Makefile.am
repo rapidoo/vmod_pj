@@ -9,7 +9,8 @@ libvmod_pj_la_SOURCES = \
 	vcc_if.c \
 	vcc_if.h \
 	vmod_pj.c \
-	blowfish.c 
+	blowfish.c \
+	base64.c
 
 vcc_if.c vcc_if.h: $(VARNISHSRC)/lib/libvmod_std/vmod.py $(top_srcdir)/src/vmod_pj.vcc
 	@PYTHON@ $(VARNISHSRC)/lib/libvmod_std/vmod.py $(top_srcdir)/src/vmod_pj.vcc

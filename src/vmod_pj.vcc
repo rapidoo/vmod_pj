@@ -1,3 +1,4 @@
 Module pj
 Init init_function
-Function STRING hello(STRING)
+Function STRING decrypt(STRING, STRING)
+Function STRING encrypt(STRING, STRING)

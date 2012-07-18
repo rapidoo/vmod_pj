@@ -7,11 +7,12 @@ server s1 {
 
 varnish v1 -vcl+backend {
 	import pj from "${vmod_topbuild}/src/.libs/libvmod_pj.so";
-	import std from "/home/flebris/varnish-3.0.2/lib/libvmod_std/.libs/libvmod_std.so";
+	import std from "${vmod_topbuild}/libs/libvmod_std.so";
 
 	sub vcl_deliver {
-		set resp.http.hello = pj.hello("abc");
-		std.log("encodage = "+ resp.http.hello);
+		set resp.http.crypt = pj.encrypt("abc", "SecretKey");
+		set resp.http.decrypt = pj.decrypt("ei1Fom8a9bY=", "SecretKey");
+
 
 	}
 } -start
@@ -19,7 +20,8 @@ varnish v1 -vcl+backend {
 client c1 {
 	txreq -url "/"
 	rxresp
-	expect resp.http.hello == "abc" 
+	expect resp.http.crypt == "ei1Fom8a9bY="
+	expect resp.http.decrypt == "abc" 
 }
 
 client c1 -run
