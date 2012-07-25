@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stddef.h>
 
 #include "vrt.h"
 #include "bin/varnishd/cache.h"
@@ -12,9 +13,11 @@
 
 const char * vmod_encrypt(struct sess *sp, const char *name, const char *key );
 const char * vmod_decrypt(struct sess *sp, const char *name, const char *key);
+const char* vmod_response_string(struct sess *sp, const char* response_body, const char* left, const char* right);
 
 int encryption (char *, unsigned char *, unsigned char *, unsigned char *, int *);
 int decryption (char *, unsigned char *, unsigned char *);
+char* get_string_between_delimiters(const char* string, const char* left, const char* right);
 
 
 int
@@ -37,7 +40,7 @@ vmod_encrypt(struct sess *sp, const char *text, const char *key )
 	u = WS_Reserve(sp->wrk->ws, 0); /* Reserve some work space */
 	p = sp->wrk->ws->f;		/* Front of workspace area */
 	
-	encryption ((char*)key, text, ciphertext_string, crypt64, &ciphertext_len);
+	encryption ((char*)key, text, (unsigned char*) ciphertext_string, (unsigned char*) crypt64, &ciphertext_len);
 	
 	v = snprintf(p, u, "%s", crypt64);
 	v++;
@@ -61,7 +64,7 @@ vmod_decrypt(struct sess *sp, const char *text, const char *key)
 	u = WS_Reserve(sp->wrk->ws, 0); /* Reserve some work space */
 	p = sp->wrk->ws->f;		/* Front of workspace area */
 	
-        decryption ((char*)key, decrypt, text);
+        decryption ((char*)key, (unsigned char*) decrypt, (unsigned char*) text);
 
 	v = snprintf(p, u, "%s", decrypt);
 	v++;
@@ -74,6 +77,40 @@ vmod_decrypt(struct sess *sp, const char *text, const char *key)
 	WS_Release(sp->wrk->ws, v);
 	return (p);
 }
+
+const char* 
+vmod_response_string(struct sess *sp, const char* response_body, const char* left, const char* right ) {
+  
+  if (response_body==NULL) return NULL;
+  int len = strlen(response_body);
+  if (len>0) {
+    return get_string_between_delimiters(response_body,left,right);
+  }
+  else return NULL;
+  
+}
+
+
+char* get_string_between_delimiters(const char* string, const char* left, const char* right) {
+  
+  const char* beginning = strstr(string, left);
+  if (beginning == NULL) return NULL;
+
+  const char* end = strstr(string, right);
+  if(end == NULL) return NULL;
+
+  beginning += strlen(left);
+  ptrdiff_t len = end - beginning;
+
+  if (len<=0) return NULL;
+  char* out = malloc(len + 1);
+  strncpy(out, beginning, len);
+
+  (out)[len] = 0;
+  return out;
+}
+
+
 
 
 

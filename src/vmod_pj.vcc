@@ -2,3 +2,4 @@ Module pj
 Init init_function
 Function STRING decrypt(STRING, STRING)
 Function STRING encrypt(STRING, STRING)
+Function STRING response_string(STRING, STRING, STRING)

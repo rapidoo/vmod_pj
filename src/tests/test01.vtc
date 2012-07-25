@@ -13,6 +13,10 @@ varnish v1 -vcl+backend {
 		set resp.http.crypt = pj.encrypt("abc", "SecretKey");
 		set resp.http.decrypt = pj.decrypt("ei1Fom8a9bY=", "SecretKey");
 
+		set resp.http.string = "<application><id>1409607239021</id><created_at>2012-07-18T15:40:46Z</created_at><updated_at>2012-07-18T15:40:47Z</updated_at><state>live</state><user_account_id>2445579883211</user_account_id><end_user_required>false</end_user_required><application_id>4dfe2ec1</application_id></application>";
+
+		set resp.http.key = pj.response_string( resp.http.string, "<user_account_id>", "</user_account_id>" );
+
 
 	}
 } -start
@@ -21,7 +25,8 @@ client c1 {
 	txreq -url "/"
 	rxresp
 	expect resp.http.crypt == "ei1Fom8a9bY="
-	expect resp.http.decrypt == "abc" 
+	expect resp.http.decrypt == "abc"
+	expect resp.http.key == "2445579883211"  
 }
 
 client c1 -run
