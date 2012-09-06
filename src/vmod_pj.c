@@ -2,22 +2,37 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stddef.h>
+#include <sys/socket.h>
+#include <arpa/inet.h>
+#include <netinet/in.h>
+#include <netdb.h>
+#include <pthread.h>
+#include <errno.h>
 
 #include "vrt.h"
 #include "bin/varnishd/cache.h"
-
 #include "vcc_if.h"
 #include "global.h"
 #include "blowfish.h"
 #include "base64.h"
 
-const char * vmod_encrypt(struct sess *sp, const char *name, const char *key );
-const char * vmod_decrypt(struct sess *sp, const char *name, const char *key);
-const char* vmod_response_string(struct sess *sp, const char* response_body, const char* left, const char* right);
+#define HTTP_GET 1
+#define HTTP_POST 2
+
+struct request {
+  char* host;
+  char* path;
+  char* header;
+  char* body;
+  int port;
+  int http_verb;
+};
+
 
 int encryption (char *, unsigned char *, unsigned char *, unsigned char *, int *);
 int decryption (char *, unsigned char *, unsigned char *);
-char* get_string_between_delimiters(const char* string, const char* left, const char* right);
+char* get_string_between_delimiters(const char*, const char* , const char* );
+
 
 
 int
@@ -25,6 +40,8 @@ init_function(struct vmod_priv *priv, const struct VCL_conf *conf)
 {
 	return (0);
 }
+
+
 
 const char *
 vmod_encrypt(struct sess *sp, const char *text, const char *key )
@@ -40,7 +57,7 @@ vmod_encrypt(struct sess *sp, const char *text, const char *key )
 	u = WS_Reserve(sp->wrk->ws, 0); /* Reserve some work space */
 	p = sp->wrk->ws->f;		/* Front of workspace area */
 	
-	encryption ((char*)key, text, (unsigned char*) ciphertext_string, (unsigned char*) crypt64, &ciphertext_len);
+	encryption ((char*)key,(unsigned char*) text, (unsigned char*) ciphertext_string, (unsigned char*) crypt64, &ciphertext_len);
 	
 	v = snprintf(p, u, "%s", crypt64);
 	v++;
@@ -129,8 +146,8 @@ decryption (char *key, unsigned char *decrypt_string, unsigned char *crypt64)
 	unsigned char *ciphertext_string = &ciphertext_buffer[0];
 	int ciphertext_len;
 
-	decode_base64( crypt64, ciphertext_string);
-        ciphertext_len = strlen (ciphertext_string);
+	ciphertext_len = decode_base64( crypt64, ciphertext_string);
+        //ciphertext_len = strlen (ciphertext_string);
 
 	Blowfish_Init(&ctx, key, keylen);
 
@@ -184,7 +201,7 @@ encryption (char *key, unsigned char *plaintext_string, unsigned char *ciphertex
            char * ciphertext_string_ori = ciphertext_string;
 
       	   *ciphertext_len = 0;
-	   
+
 	   Blowfish_Init(&ctx, key, keylen);
 
 	   while (plaintext_len)
@@ -234,6 +251,8 @@ encryption (char *key, unsigned char *plaintext_string, unsigned char *ciphertex
             return 0;
 
 } 
+
+
 
 
 

@@ -10,13 +10,20 @@ varnish v1 -vcl+backend {
 	import std from "${vmod_topbuild}/libs/libvmod_std.so";
 
 	sub vcl_deliver {
-		set resp.http.crypt = pj.encrypt("abc", "SecretKey");
-		set resp.http.decrypt = pj.decrypt("ei1Fom8a9bY=", "SecretKey");
 
-		set resp.http.string = "<application><id>1409607239021</id><created_at>2012-07-18T15:40:46Z</created_at><updated_at>2012-07-18T15:40:47Z</updated_at><state>live</state><user_account_id>2445579883211</user_account_id><end_user_required>false</end_user_required><application_id>4dfe2ec1</application_id></application>";
+		set resp.http.string = "1346919339|secretKey|b95obltdukq6uyde7e2g2hxb5bxztkwafl8jneeixeu3rew4h2hx6u5aj6";
+		set resp.http.key = "91682bc88e5e5c0155cbca994d59d343";
 
-		set resp.http.key = pj.response_string( resp.http.string, "<user_account_id>", "</user_account_id>" );
+		set resp.http.crypt = pj.encrypt(resp.http.string, resp.http.key );
 
+		set resp.http.decrypt = pj.decrypt( resp.http.crypt , resp.http.key );
+
+
+		#set resp.http.string = "<application><id>1409607239021</id><created_at>2012-07-18T15:40:46Z</created_at><updated_at>2012-07-18T15:40:47Z</updated_at><state>live</state><user_account_id>2445579883211</user_account_id><end_user_required>false</end_user_required><application_id>4dfe2ec1</application_id></application>";
+
+#		set resp.http.key = pj.response_string( resp.http.string, "<user_account_id>", "</user_account_id>" );
+
+#		set resp.http.res = pj.send_get_request_body_https("yfr02pp.ecyes.local","443","/authentification/static_3.3.0.4/images/bt_compte_valider.png","");
 
 	}
 } -start
@@ -24,9 +31,10 @@ varnish v1 -vcl+backend {
 client c1 {
 	txreq -url "/"
 	rxresp
-	expect resp.http.crypt == "ei1Fom8a9bY="
-	expect resp.http.decrypt == "abc"
-	expect resp.http.key == "2445579883211"  
+	#expect resp.http.crypt == "Su/AWAc2z8cnUJMAtrzLoErM7lgKlDk8jaiWIK4VPiJ4TlWUW8X4bdxeVcMRuCRWqm/hnBz+q7PBrxG9SDHmb1ar9LvjCR1oko5bXzot21w="
+	expect resp.http.decrypt == resp.http.string
+#	expect resp.http.key == "2445579883211"  
+#	expect resp.http.res = "fdf200"
 }
 
 client c1 -run
