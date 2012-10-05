@@ -19,6 +19,8 @@
 #define HTTP_GET 1
 #define HTTP_POST 2
 
+#define TAILLE 10000
+
 struct request {
   char* host;
   char* path;
@@ -49,10 +51,13 @@ vmod_encrypt(struct sess *sp, const char *text, const char *key )
 	char *p;
 	unsigned u, v;
 
-	unsigned char crypt64[10000];
-	unsigned char ciphertext_buffer[10000];
+	unsigned char crypt64[TAILLE];
+	unsigned char ciphertext_buffer[TAILLE];
 	unsigned char *ciphertext_string = &ciphertext_buffer[0];
 	int ciphertext_len = 0;
+
+	memset (crypt64, 0, TAILLE );
+	memset (ciphertext_buffer, 0, TAILLE );
 
 	u = WS_Reserve(sp->wrk->ws, 0); /* Reserve some work space */
 	p = sp->wrk->ws->f;		/* Front of workspace area */
@@ -76,12 +81,14 @@ vmod_decrypt(struct sess *sp, const char *text, const char *key)
 {
 	char *p;
 	unsigned u, v;
-	unsigned char decrypt[10000];
-	
+	unsigned char decrypt[TAILLE];
+
+	memset (decrypt, 0, TAILLE );
+
 	u = WS_Reserve(sp->wrk->ws, 0); /* Reserve some work space */
 	p = sp->wrk->ws->f;		/* Front of workspace area */
 	
-        decryption ((char*)key, (unsigned char*) decrypt, (unsigned char*) text);
+        decryption ((char*)key, (unsigned char*) decrypt, (unsigned char*) text);	
 
 	v = snprintf(p, u, "%s", decrypt);
 	v++;
@@ -142,12 +149,14 @@ decryption (char *key, unsigned char *decrypt_string, unsigned char *crypt64)
 	int block_len;
 	int n,i;
         int keylen = strlen(key);
-   	unsigned char ciphertext_buffer[10000];
+   	unsigned char ciphertext_buffer[TAILLE];
 	unsigned char *ciphertext_string = &ciphertext_buffer[0];
-	int ciphertext_len;
+	int ciphertext_len, ciphertext_len_sav; 
 
-	ciphertext_len = decode_base64( crypt64, ciphertext_string);
+	ciphertext_len_sav = decode_base64( crypt64, ciphertext_string);
         //ciphertext_len = strlen (ciphertext_string);
+
+	ciphertext_len = ciphertext_len_sav;
 
 	Blowfish_Init(&ctx, key, keylen);
 
@@ -184,7 +193,7 @@ decryption (char *key, unsigned char *decrypt_string, unsigned char *crypt64)
 		*decrypt_string++ = (unsigned char)message_right;
 
 	}
-
+	return ciphertext_len;
 }
 
 
